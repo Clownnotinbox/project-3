@@ -13,7 +13,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 87vh;
+            height: 100vh;
             margin: 0;
         }
 
@@ -40,7 +40,7 @@
         }
 
         .btn:hover {
-            background-color: #4169E1;
+            background-color: #365fba;
         }
 
         .alert {
@@ -121,6 +121,21 @@
         .weather-info .weather-condition {
             margin-top: 6px;
         }
+
+        .dash-link {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 1.2rem;
+            color: white; /* Изменено на белый цвет */
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .dash-link:hover {
+            text-decoration: underline;
+            color: #f8f9fa; /* Светло-серый оттенок при наведении */
+        }
     </style>
 </head>
 <body>
@@ -139,7 +154,7 @@
                     Пожалуйста, введите конечную точку маршрута.
                 </div>
             </div>
-            <button type="submit" class="btn">получить прогноз</button>
+            <button type="submit" class="btn">Получить прогноз</button>
         </form>
 
         {% if weather %}
@@ -153,12 +168,12 @@
                         <h5 class="card-title">Прогноз для маршрута:</h5>
                         <div class="row">
                             <div class="col-md-6">
-                                <h6>Начальная точка: {{ request.form.start_city }}</h6>
+                                <h6>Начальная точка: {{ session.start_city }}</h6>
                                 <div class="weather-info">
-                                    <div class="temperature">Температура: {{ weather.start_temperature }}°C</div>
+                                    <div class="temperature">Максимальная температура: {{ weather.start_weather[0].temperature_max }}°C</div>
                                     <div class="weather-condition">
                                         Состояние погоды:
-                                        {% if 'плохие погодные условия' in weather.start_weather_condition.lower() %}
+                                        {% if 'плохие погодные условия' in weather.start_weather[0].weather_condition.lower() %}
                                             <span class="badge badge-bad-weather">Плохие погодные условия</span>
                                         {% else %}
                                             <span class="badge badge-good-weather">Хорошие погодные условия</span>
@@ -167,12 +182,12 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <h6>Конечная точка: {{ request.form.end_city }}</h6>
+                                <h6>Конечная точка: {{ session.end_city }}</h6>
                                 <div class="weather-info">
-                                    <div class="temperature">Температура: {{ weather.end_temperature }}°C</div>
+                                    <div class="temperature">Максимальная температура: {{ weather.end_weather[0].temperature_max }}°C</div>
                                     <div class="weather-condition">
                                         Состояние погоды:
-                                        {% if 'плохие погодные условия' in weather.end_weather_condition.lower() %}
+                                        {% if 'плохие погодные условия' in weather.end_weather[0].weather_condition.lower() %}
                                             <span class="badge badge-bad-weather">Плохие погодные условия</span>
                                         {% else %}
                                             <span class="badge badge-good-weather">Хорошие погодные условия</span>
@@ -181,6 +196,8 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- Измененная ссылка на Dash-приложение -->
+                        <a href="/dash/" class="dash-link">Перейти к визуализации прогноза</a>
                     </div>
                 </div>
             {% endif %}
