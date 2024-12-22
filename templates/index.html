@@ -5,15 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Прогноз погоды для маршрута</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet"> <!-- Добавлен шрифт -->
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
             background-color: #f0f8ff;
-            font-family: 'Open Sans', sans-serif; /* Применен шрифт Open Sans */
+            font-family: 'Open Sans', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            height: auto;
+            padding-bottom: 50px;
             margin: 0;
         }
 
@@ -68,8 +69,8 @@
         .list-group-item {
             background-color: #f8f9fa;
             font-size: 1rem;
-            border-radius: 10px;  /* Скругление углов */
-            margin-bottom: 8px;   /* Пространство между элементами */
+            border-radius: 10px;
+            margin-bottom: 8px;
         }
 
         .form-control {
@@ -100,7 +101,7 @@
         }
 
         h6 {
-            font-size: 1.3rem; /* Изменённый размер шрифта */
+            font-size: 1.3rem;
             margin-bottom: 16px;
         }
 
@@ -109,12 +110,12 @@
             padding: 16px;
             border-radius: 16px;
             margin-bottom: 16px;
-            color: #2b2b2b;  /* Текст внутри блока цвета #2b2b2b */
+            color: #2b2b2b;
         }
 
         .weather-info .temperature,
         .weather-info .weather-condition {
-            font-size: 1rem;  /* Одинаковый размер шрифта */
+            font-size: 1rem;
             margin: 0;
         }
 
@@ -127,14 +128,44 @@
             margin-top: 20px;
             text-align: center;
             font-size: 1.2rem;
-            color: white; /* Изменено на белый цвет */
+            color: white;
             text-decoration: none;
             font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
 
         .dash-link:hover {
             text-decoration: underline;
-            color: #f8f9fa; /* Светло-серый оттенок при наведении */
+            color: #f8f9fa;
+        }
+
+        .intermediate-point {
+            display: flex;
+            margin-bottom: 10px;
+        }
+
+        .intermediate-point input {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .remove-point {
+            background-color: #dc3545;
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .add-point {
+            background-color: #28a745;
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -148,10 +179,24 @@
                     Пожалуйста, введите начальную точку маршрута.
                 </div>
             </div>
-            <div class="mb-3">
+            <div id="intermediate-points">
+            </div>
+            <button type="button" class="add-point">Добавить промежуточную точку</button>
+            <div class="mb-3 mt-3">
                 <input type="text" id="end_city" name="end_city" class="form-control" placeholder="Конечная точка (город):" required>
                 <div class="invalid-feedback">
                     Пожалуйста, введите конечную точку маршрута.
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="days" class="form-label">Количество дней прогноза:</label>
+                <select id="days" name="days" class="form-select" required>
+                    <option value="1">1 день</option>
+                    <option value="3">3 дня</option>
+                    <option value="5">5 дней</option>
+                </select>
+                <div class="invalid-feedback">
+                    Пожалуйста, выберите количество дней прогноза.
                 </div>
             </div>
             <button type="submit" class="btn">Получить прогноз</button>
@@ -167,36 +212,31 @@
                     <div class="card-body">
                         <h5 class="card-title">Прогноз для маршрута:</h5>
                         <div class="row">
-                            <div class="col-md-6">
-                                <h6>Начальная точка: {{ session.start_city }}</h6>
-                                <div class="weather-info">
-                                    <div class="temperature">Максимальная температура: {{ weather.start_weather[0].temperature_max }}°C</div>
-                                    <div class="weather-condition">
-                                        Состояние погоды:
-                                        {% if 'плохие погодные условия' in weather.start_weather[0].weather_condition.lower() %}
-                                            <span class="badge badge-bad-weather">Плохие погодные условия</span>
-                                        {% else %}
-                                            <span class="badge badge-good-weather">Хорошие погодные условия</span>
-                                        {% endif %}
+                            {% for point in weather %}
+                                <div class="col-md-6">
+                                    <h6>{{ point.city }}:</h6>
+                                    <div class="weather-info">
+                                        {% for day in point.weather %}
+                                            <div class="mb-2">
+                                                <strong>{{ day.date }}:</strong>
+                                                <div class="temperature">Максимальная температура: {{ day.temperature_max }}°C</div>
+                                                <div class="temperature">Минимальная температура: {{ day.temperature_min }}°C</div>
+                                                <div class="temperature">Скорость ветра: {{ day.wind_speed }} км/ч</div>
+                                                <div class="temperature">Вероятность осадков: {{ day.precipitation_probability }}%</div>
+                                                <div class="weather-condition">
+                                                    Состояние погоды:
+                                                    {% if 'плохие погодные условия' in day.weather_condition.lower() %}
+                                                        <span class="badge badge-bad-weather">Плохие погодные условия</span>
+                                                    {% else %}
+                                                        <span class="badge badge-good-weather">Хорошие погодные условия</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        {% endfor %}
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-md-6">
-                                <h6>Конечная точка: {{ session.end_city }}</h6>
-                                <div class="weather-info">
-                                    <div class="temperature">Максимальная температура: {{ weather.end_weather[0].temperature_max }}°C</div>
-                                    <div class="weather-condition">
-                                        Состояние погоды:
-                                        {% if 'плохие погодные условия' in weather.end_weather[0].weather_condition.lower() %}
-                                            <span class="badge badge-bad-weather">Плохие погодные условия</span>
-                                        {% else %}
-                                            <span class="badge badge-good-weather">Хорошие погодные условия</span>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
+                            {% endfor %}
                         </div>
-                        <!-- Измененная ссылка на Dash-приложение -->
                         <a href="/dash/" class="dash-link">Перейти к визуализации прогноза</a>
                     </div>
                 </div>
@@ -223,6 +263,34 @@
                     }, false)
                 })
         })()
+
+        document.querySelector('.add-point').addEventListener('click', function() {
+            var container = document.getElementById('intermediate-points');
+
+            var pointDiv = document.createElement('div');
+            pointDiv.classList.add('intermediate-point');
+
+            var input = document.createElement('input');
+            input.type = 'text';
+            input.name = 'intermediate_cities[]';
+            input.classList.add('form-control');
+            input.placeholder = 'Промежуточная точка (город):';
+            input.required = true;
+
+            var removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.classList.add('remove-point');
+            removeButton.innerText = 'Удалить';
+
+            removeButton.addEventListener('click', function() {
+                container.removeChild(pointDiv);
+            });
+
+            pointDiv.appendChild(input);
+            pointDiv.appendChild(removeButton);
+
+            container.appendChild(pointDiv);
+        });
     </script>
 </body>
 </html>
